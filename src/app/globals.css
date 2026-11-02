@@ -91,20 +91,17 @@ button.quiet {
 
 .brand {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   color: white;
   text-decoration: none;
   margin-bottom: 22px;
 }
 
-.brand span {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-}
-
-.brand strong { font-size: 16px; font-weight: 600; }
+.brand span { display: flex; flex-direction: column; gap: 1px; font-size: 13px; line-height: 1.2; }
+.brand img { display: block; background: white; }
+.brand strong { font-size: 14px; font-weight: 600; letter-spacing: 0.06em; }
 
 .side-nav { display: flex; flex-direction: column; gap: 4px; }
 
@@ -281,6 +278,27 @@ th {
 .field-note { font-size: 16px; max-width: 42ch; }
 .field-nav { display: flex; gap: 18px; margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--line); }
 .field-nav a { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+
+.office-meters { margin-top: 0; }
+.section-title { margin: 22px 0 8px; font-size: 16px; }
+.bar { height: 8px; background: var(--line); margin: 8px 0 18px; max-width: 28rem; }
+.bar span { display: block; height: 100%; background: var(--steel); }
+.status-line { list-style: none; display: flex; flex-wrap: wrap; gap: 16px; padding: 0; margin: 0 0 16px; }
+.status-line li { display: flex; align-items: center; gap: 8px; }
+.status-line strong { font-size: 22px; }
+.pill { display: inline-block; padding: 1px 6px; font-size: 12px; font-weight: 600; }
+.pill-nueva, .pill-abierta, .pill-pendiente { background: #e4eef4; color: var(--steel); }
+.pill-en_curso, .pill-pausada { background: var(--amber-wash); color: var(--amber); }
+.pill-cerrada { background: #e5f2ea; color: #1f6b45; }
+.plain-list { list-style: none; padding: 0; margin: 0; }
+.plain-list li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.plain-list span { color: var(--muted); }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin: 12px 0; }
+.inline-form label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.day-list { display: flex; flex-direction: column; }
+.day-row { display: grid; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); min-height: 48px; }
+.day-row span { color: var(--muted); }
+.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 
 @media (max-width: 800px) {
   .desk { grid-template-columns: 1fr; }

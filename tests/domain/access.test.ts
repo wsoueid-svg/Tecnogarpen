@@ -14,10 +14,10 @@ function actor(role: Role, companyIds: string[]): Actor {
   };
 }
 
-test("operario lands on the field desk and office roles land on clients", () => {
+test("operario lands on the field desk and office roles land on the panel", () => {
   assert.equal(landingPath("operario"), "/operario");
   for (const role of ["jefe", "encargado", "administrativo"] as const) {
-    assert.equal(landingPath(role), "/clientes");
+    assert.equal(landingPath(role), "/panel");
     assert.equal(canWriteMasters(actor(role, [COMPANY_TG_ID])), true);
     assert.doesNotThrow(() => assertCanWriteMasters(actor(role, [COMPANY_TG_ID]), COMPANY_TG_ID));
   }

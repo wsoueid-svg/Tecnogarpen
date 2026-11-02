@@ -9,8 +9,8 @@ export class AccessError extends Error {
   }
 }
 
-export function landingPath(role: Role): "/operario" | "/clientes" {
-  return role === "operario" ? "/operario" : "/clientes";
+export function landingPath(role: Role): "/operario" | "/panel" {
+  return role === "operario" ? "/operario" : "/panel";
 }
 
 export function canWriteMasters(actor: Actor): boolean {

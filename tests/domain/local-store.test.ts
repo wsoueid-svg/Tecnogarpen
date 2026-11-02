@@ -42,6 +42,7 @@ test("local store isolates companies, blocks operario writes, and keeps the hier
     );
 
     await assert.rejects(() => repo.listClients(pol, COMPANY_TGI_ID), AccessError);
+    const tgBefore = await repo.listClients(pol, COMPANY_TG_ID);
     const created = await repo.createClient(marta, {
       companyId: COMPANY_TGI_ID,
       clientType: "constructora",
@@ -51,7 +52,8 @@ test("local store isolates companies, blocks operario writes, and keeps the hier
       phone: null,
       address: null,
     });
-    assert.equal((await repo.listClients(pol, COMPANY_TG_ID)).length, 0);
+    assert.equal((await repo.listClients(pol, COMPANY_TG_ID)).some((client) => client.id === created.id), false);
+    assert.equal(tgBefore.length > 0, true);
     assert.equal((await repo.listClients(marta, COMPANY_TGI_ID))[0]?.id, created.id);
     await assert.rejects(
       () =>
@@ -69,8 +71,8 @@ test("local store isolates companies, blocks operario writes, and keeps the hier
 
     const again = createLocalRepository(file);
     assert.equal((await again.listClients(marta, COMPANY_TGI_ID))[0]?.name, "Obra Llevant");
-    const onDisk = JSON.parse(await readFile(file, "utf8")) as { clients: Array<{ createdBy: string }> };
-    assert.equal(onDisk.clients[0]?.createdBy, marta.id);
+    const onDisk = JSON.parse(await readFile(file, "utf8")) as { clients: Array<{ name: string; createdBy: string }> };
+    assert.equal(onDisk.clients.find((client) => client.name === "Obra Llevant")?.createdBy, marta.id);
     assert.equal("updateClient" in repo, false);
     assert.equal("deleteClient" in repo, false);
 
@@ -120,8 +122,8 @@ test("local store isolates companies, blocks operario writes, and keeps the hier
       ),
     );
     const tgClients = await repo.listClients(marta, COMPANY_TG_ID);
-    assert.equal(tgClients.length, parallel.length);
-    assert.deepEqual(tgClients.map((client) => client.name).sort(), ["Dos", "Tres", "Uno"]);
+    assert.equal(tgClients.length, tgBefore.length + parallel.length);
+    for (const name of ["Uno", "Dos", "Tres"]) assert.equal(tgClients.some((client) => client.name === name), true);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

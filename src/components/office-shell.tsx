@@ -24,12 +24,15 @@ export function OfficeShell({
         Saltar al contenido
       </a>
       <aside className="rail">
-        <Link href="/clientes" className="brand">
-          <span>{active?.prefix ?? "TG"}</span>
-          <strong>Tecno Garpen</strong>
+        <Link href="/panel" className="brand">
+          <img src={active?.prefix === "TGI" ? "/brand/tgi.svg" : "/brand/tg.svg"} alt="" width={36} height={36} />
+          <span>
+            <strong>{active?.prefix ?? "TG"}</strong>
+            {active?.name ?? "Tecno Garpen"}
+          </span>
         </Link>
         <OfficeNav />
-        <p className="rail-note">Incremento A · maestros de alta</p>
+        <p className="rail-note">Demo Adri · incidencias y órdenes</p>
       </aside>
       <div className="workspace">
         <header className="topbar">

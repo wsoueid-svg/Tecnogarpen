@@ -1,40 +1,46 @@
-# Tecno Garpen — Incremento A
+# Tecno Garpen
 
-Control center for Tecno Garpen. This increment covers the office masters (clients, fincas, assets), a field shell for operarios, and the company/role boundary. Incidents, work orders, planning, email, quotes, and payments are tables or nothing: there is no UI for them yet.
+Control center for the Adri demo (Tuesday 3 Nov 2026, Europe/Madrid). Increment A is the office masters and company boundary. Increment B adds incidents, work orders, the operario day, and a small dashboard. The seed is fictional Infraspeak-shaped data in `fixtures/demo/` (not a live dump and not real customers).
 
-## Stack
+## Demo Adri
 
-- Next.js App Router and TypeScript
-- Office desktop screens, plus `/operario` with a standalone web app manifest
-- Auth stub: mock directory by default. `AUTH_MODE=entra` turns the directory off and records whether Entra settings are present
-- Roles: `jefe`, `encargado`, `administrativo`, `operario`
-- Data: `.data/store.json` by default. `DATA_BACKEND=supabase` uses a Supabase project in Frankfurt (`eu-central-1`)
-
-Masters are write-once. The app exposes create and list. The SQL grants `select` and `insert` only.
-
-## Run locally
+From a clean checkout:
 
 ```bash
 npm install
 cp .env.example .env.local
+rm -f .data/store.json
 npm run dev
 ```
 
-Open http://localhost:3000. The first read creates `.data/store.json` (gitignored) with the two companies and the demo people.
+Open http://localhost:3000. There is no password. The first read writes `.data/store.json` from the fixtures. If that file already exists from an older run, delete it so the demo seed loads again.
+
+1. **Marta Puig** (jefe, TG and TGI) lands on **Panel**.
+   - Tecno Garpen: open incidents, orders by status, closed hours against **350 € / 8 h**.
+   - Switch the header to **TGI · Tecno Garpen Instalaciones** and the Gavà nave replaces the Garraf work. Switch back to TG.
+   - **Incidencias**: six failures in the seed (F-3001 … F-3006). Open one, change the status, or use **Nueva incidencia**.
+   - **Órdenes**: open **F-3001** (puerta del garaje, sin operario). **Asignar** Pol Riera and set the status to **En curso**.
+2. **Salir**, then **Pol Riera** (operario, only TG). He lands on **/operario**, **Mi día**.
+   - Por hacer includes the basculante in course (F-3002) and the maintenance visits **SW-6002** (Wednesday 4 Nov) and **SW-6003** (Thursday 5 Nov).
+   - Open F-3002 (or the one Marta just assigned). **Empezar** if it is still pending. **Cerrar orden** with a note, the photo stub (checkbox or a file name), and the signature (his name is already filled in).
+3. **Salir**, enter as Marta again. The panel hours move because the closed order now counts toward the 350 € day.
+
+Seed shape: 3 clients, 7 locations, 6 doors, 6 failures (each with a repair order; F-3004 is unassigned), 2 maintenance contracts, 3 maintenance visits. Pol does not see TGI.
 
 ```bash
 npm test
 npm run build
 ```
 
-## Demo directory
+## Stack
 
-| Person | Role | Companies | Lands on |
-| --- | --- | --- | --- |
-| Marta Puig | jefe | Tecno Garpen (TG) and Tecno Garpen Instalaciones (TGI) | `/clientes` |
-| Pol Riera | operario | Tecno Garpen (TG) | `/operario` |
+- Next.js App Router and TypeScript
+- Office desktop, plus `/operario` with a standalone manifest
+- Auth stub: mock directory by default. `AUTH_MODE=entra` turns the directory off
+- Roles: `jefe`, `encargado`, `administrativo`, `operario`
+- Data: `.data/store.json` by default. `DATA_BACKEND=supabase` uses a Frankfurt project (`eu-central-1`)
 
-There is no password. The header company control limits every list to one company, and a person only sees companies they belong to. Pol can open the office lists in read-only mode. Jefe, encargado, and administrativo can create masters for their companies.
+Masters (clients, fincas, assets) stay write-once. Incidents and work orders can change status. Closing an order stores a note, a photo name, and a signature name on the local file.
 
 ## Environment
 
@@ -42,26 +48,23 @@ See `.env.example`. Do not commit real secrets.
 
 - `AUTH_MODE=mock` (default) or `entra`
 - `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET` — presence only; Entra login is not wired
-- `SESSION_SECRET` — signs the demo cookie. The dev fallback must be replaced anywhere the app is shared
+- `SESSION_SECRET` — signs the demo cookie
 - `DATA_BACKEND=local` or `supabase`
 - `DATA_FILE` — optional path for the JSON store
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_JWT_SECRET` — required for the Supabase backend
 
 ## Supabase (Frankfurt)
 
-Create the project in region Frankfurt (`eu-central-1`), then apply the migrations in order:
+Apply the migrations in order:
 
 1. `supabase/migrations/20261102120000_init_masters.sql`
 2. `supabase/migrations/20261102120100_phase1_stubs.sql`
 3. `supabase/migrations/20261102120200_rls.sql`
 4. `supabase/migrations/20261102120300_seed.sql`
+5. `supabase/migrations/20261103100000_increment_b.sql`
 
-With the Supabase CLI linked to that project: `supabase db push`.
-
-Row level security uses `auth.uid()`. In this increment the server signs a one-hour JWT with `SUPABASE_JWT_SECRET` whose `sub` is `app_user.id` (the same ids as the mock directory). Postgres policies then see that person. Office writers are `jefe`, `encargado`, and `administrativo`. Operario can select rows of their companies and cannot insert.
-
-`user_company` is the membership table: Marta belongs to both companies, Pol only to TG.
+`20261103100000_increment_b.sql` is generated from `fixtures/demo` with `npx tsx scripts/emit-increment-b-sql.ts`. The server signs a one-hour JWT whose `sub` is `app_user.id`, so `auth.uid()` matches Marta and Pol.
 
 ## Out of scope
 
-Incident, work-order, planning, contract, email, AI, quote, Sage, and MONEI screens. The phase-1 tables exist so the next increment can fill them in without reshaping the masters.
+Email-to-incident, real Entra SSO, Sage, MONEI, planning drag-and-drop, and a live Infraspeak import. `fixtures/demo/SEED-MAP.md` is the load map for the fictional sample.

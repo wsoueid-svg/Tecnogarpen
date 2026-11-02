@@ -15,6 +15,32 @@ import type {
   FincaRecord,
 } from "../domain/types";
 import { signSupabaseJwt } from "./jwt";
+import {
+  sbAssign,
+  sbClose,
+  sbContracts,
+  sbCreateIncident,
+  sbCreateOrder,
+  sbListIncidents,
+  sbListMyOrders,
+  sbListOrders,
+  sbOperarios,
+  sbSetIncidentStatus,
+  sbSetOrderStatus,
+} from "./supabase-ops";
+import type {
+  ContractRecord,
+  Incident,
+  IncidentInput,
+  IncidentRecord,
+  IncidentStatus,
+  OperarioOption,
+  WorkOrder,
+  WorkOrderClose,
+  WorkOrderInput,
+  WorkOrderRecord,
+  WorkOrderStatus,
+} from "../domain/types";
 
 type DbError = { message: string } | null;
 
@@ -66,6 +92,12 @@ export class SupabaseMastersRepository implements MastersRepository {
       email: row.email == null ? null : String(row.email),
       phone: row.phone == null ? null : String(row.phone),
       address: row.address == null ? null : String(row.address),
+      city: null,
+      postalCode: null,
+      country: null,
+      code: null,
+      notes: null,
+      externalId: null,
       createdAt: String(row.created_at),
       createdBy: String(row.created_by),
     }));
@@ -99,6 +131,12 @@ export class SupabaseMastersRepository implements MastersRepository {
       email: row.email == null ? null : String(row.email),
       phone: row.phone == null ? null : String(row.phone),
       address: row.address == null ? null : String(row.address),
+      city: null,
+      postalCode: null,
+      country: null,
+      code: null,
+      notes: null,
+      externalId: null,
       createdAt: String(row.created_at),
       createdBy: String(row.created_by),
     };
@@ -121,6 +159,10 @@ export class SupabaseMastersRepository implements MastersRepository {
       address: row.address == null ? null : String(row.address),
       municipality: row.municipality == null ? null : String(row.municipality),
       postalCode: row.postal_code == null ? null : String(row.postal_code),
+      parentId: null,
+      code: null,
+      notes: null,
+      externalId: null,
       createdAt: String(row.created_at),
       createdBy: String(row.created_by),
       clientName: embeddedName(row.client),
@@ -162,6 +204,10 @@ export class SupabaseMastersRepository implements MastersRepository {
       address: row.address == null ? null : String(row.address),
       municipality: row.municipality == null ? null : String(row.municipality),
       postalCode: row.postal_code == null ? null : String(row.postal_code),
+      parentId: null,
+      code: null,
+      notes: null,
+      externalId: null,
       createdAt: String(row.created_at),
       createdBy: String(row.created_by),
     };
@@ -186,6 +232,10 @@ export class SupabaseMastersRepository implements MastersRepository {
         fincaId: String(row.finca_id),
         name: String(row.name),
         serialNumber: row.serial_number == null ? null : String(row.serial_number),
+        code: null,
+        locationLabel: null,
+        notes: null,
+        externalId: null,
         installedOn: row.installed_on == null ? null : String(row.installed_on),
         createdAt: String(row.created_at),
         createdBy: String(row.created_by),
@@ -227,10 +277,62 @@ export class SupabaseMastersRepository implements MastersRepository {
       fincaId: String(row.finca_id),
       name: String(row.name),
       serialNumber: row.serial_number == null ? null : String(row.serial_number),
+      code: null,
+      locationLabel: null,
+      notes: null,
+      externalId: null,
       installedOn: row.installed_on == null ? null : String(row.installed_on),
       createdAt: String(row.created_at),
       createdBy: String(row.created_by),
     };
+  }
+
+  async listIncidents(actor: Actor, companyId: string): Promise<IncidentRecord[]> {
+    assertCompanyVisible(actor, companyId);
+    return sbListIncidents(this.clientFor(actor), companyId);
+  }
+
+  async createIncident(actor: Actor, input: IncidentInput): Promise<Incident> {
+    return sbCreateIncident(this.clientFor(actor), actor, input);
+  }
+
+  async setIncidentStatus(actor: Actor, incidentId: string, status: IncidentStatus): Promise<Incident> {
+    return sbSetIncidentStatus(this.clientFor(actor), actor, incidentId, status);
+  }
+
+  async listWorkOrders(actor: Actor, companyId: string): Promise<WorkOrderRecord[]> {
+    assertCompanyVisible(actor, companyId);
+    return sbListOrders(this.clientFor(actor), companyId);
+  }
+
+  async listMyWorkOrders(actor: Actor): Promise<WorkOrderRecord[]> {
+    return sbListMyOrders(this.clientFor(actor), actor);
+  }
+
+  async createWorkOrder(actor: Actor, input: WorkOrderInput): Promise<WorkOrder> {
+    return sbCreateOrder(this.clientFor(actor), actor, input);
+  }
+
+  async assignWorkOrder(actor: Actor, workOrderId: string, assigneeId: string): Promise<WorkOrder> {
+    return sbAssign(this.clientFor(actor), actor, workOrderId, assigneeId);
+  }
+
+  async setWorkOrderStatus(actor: Actor, workOrderId: string, status: WorkOrderStatus): Promise<WorkOrder> {
+    return sbSetOrderStatus(this.clientFor(actor), actor, workOrderId, status);
+  }
+
+  async closeWorkOrder(actor: Actor, workOrderId: string, close: WorkOrderClose): Promise<WorkOrder> {
+    return sbClose(this.clientFor(actor), actor, workOrderId, close);
+  }
+
+  async listContracts(actor: Actor, companyId: string): Promise<ContractRecord[]> {
+    assertCompanyVisible(actor, companyId);
+    return sbContracts(this.clientFor(actor), companyId);
+  }
+
+  async listOperarios(actor: Actor, companyId: string): Promise<OperarioOption[]> {
+    assertCompanyVisible(actor, companyId);
+    return sbOperarios(this.clientFor(actor), companyId);
   }
 
   private clientFor(actor: Actor): SupabaseClient {

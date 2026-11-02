@@ -1,7 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertCanWriteMasters, assertCompanyVisible } from "../domain/access";
-import { DIRECTORY_COMPANIES, DIRECTORY_USERS } from "../domain/directory";
 import type { MastersRepository } from "../domain/repository";
 import type {
   Actor,
@@ -11,30 +10,43 @@ import type {
   Client,
   ClientInput,
   Company,
+  ContractRecord,
   Finca,
   FincaInput,
   FincaRecord,
+  Incident,
+  IncidentInput,
+  IncidentRecord,
+  IncidentStatus,
+  OperarioOption,
   StoreFile,
+  WorkOrder,
+  WorkOrderClose,
+  WorkOrderInput,
+  WorkOrderRecord,
+  WorkOrderStatus,
 } from "../domain/types";
 import { ValidationError } from "../domain/validation";
+import { loadDemoStore } from "./load-fixtures";
+import {
+  addIncident,
+  addWorkOrder,
+  closeOrder,
+  makeAsset,
+  makeClient,
+  makeFinca,
+  patchAssignee,
+  patchIncidentStatus,
+  patchOrderStatus,
+  readContracts,
+  readIncidents,
+  readMyOrders,
+  readOperarios,
+  readOrders,
+} from "./store-ops";
 
 function emptyStore(): StoreFile {
-  return {
-    companies: DIRECTORY_COMPANIES.map((company) => ({ ...company })),
-    users: DIRECTORY_USERS.map((user) => ({
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      role: user.role,
-      createdAt: user.createdAt,
-    })),
-    memberships: DIRECTORY_USERS.flatMap((user) =>
-      user.companyIds.map((companyId) => ({ userId: user.id, companyId })),
-    ),
-    clients: [],
-    fincas: [],
-    assets: [],
-  };
+  return loadDemoStore();
 }
 
 function byNewest<T extends { createdAt: string; name: string }>(rows: T[]): T[] {
@@ -84,12 +96,7 @@ export class LocalMastersRepository implements MastersRepository {
     assertCanWriteMasters(actor, input.companyId);
     return withFileLock(this.filePath, () =>
       this.mutate((store) => {
-        const row: Client = {
-          ...input,
-          id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
-          createdBy: actor.id,
-        };
+        const row = makeClient(actor, input);
         store.clients.push(row);
         return row;
       }),
@@ -114,12 +121,7 @@ export class LocalMastersRepository implements MastersRepository {
       if (!client || client.companyId !== input.companyId) {
         throw new ValidationError("La finca tiene que pertenecer a un cliente de la misma empresa.");
       }
-      const row: Finca = {
-        ...input,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        createdBy: actor.id,
-      };
+      const row = makeFinca(actor, input);
       store.fincas.push(row);
       return row;
     }));
@@ -151,15 +153,54 @@ export class LocalMastersRepository implements MastersRepository {
       if (!finca || finca.companyId !== input.companyId) {
         throw new ValidationError("El activo tiene que pertenecer a una finca de la misma empresa.");
       }
-      const row: Asset = {
-        ...input,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        createdBy: actor.id,
-      };
+      const row = makeAsset(actor, input);
       store.assets.push(row);
       return row;
     }));
+  }
+
+  async listIncidents(actor: Actor, companyId: string): Promise<IncidentRecord[]> {
+    return withFileLock(this.filePath, async () => readIncidents(actor, await this.read(), companyId));
+  }
+
+  async createIncident(actor: Actor, input: IncidentInput): Promise<Incident> {
+    return withFileLock(this.filePath, () => this.mutate((store) => addIncident(actor, store, input)));
+  }
+
+  async setIncidentStatus(actor: Actor, incidentId: string, status: IncidentStatus): Promise<Incident> {
+    return withFileLock(this.filePath, () => this.mutate((store) => patchIncidentStatus(actor, store, incidentId, status)));
+  }
+
+  async listWorkOrders(actor: Actor, companyId: string): Promise<WorkOrderRecord[]> {
+    return withFileLock(this.filePath, async () => readOrders(actor, await this.read(), companyId));
+  }
+
+  async listMyWorkOrders(actor: Actor): Promise<WorkOrderRecord[]> {
+    return withFileLock(this.filePath, async () => readMyOrders(actor, await this.read()));
+  }
+
+  async createWorkOrder(actor: Actor, input: WorkOrderInput): Promise<WorkOrder> {
+    return withFileLock(this.filePath, () => this.mutate((store) => addWorkOrder(actor, store, input)));
+  }
+
+  async assignWorkOrder(actor: Actor, workOrderId: string, assigneeId: string): Promise<WorkOrder> {
+    return withFileLock(this.filePath, () => this.mutate((store) => patchAssignee(actor, store, workOrderId, assigneeId)));
+  }
+
+  async setWorkOrderStatus(actor: Actor, workOrderId: string, status: WorkOrderStatus): Promise<WorkOrder> {
+    return withFileLock(this.filePath, () => this.mutate((store) => patchOrderStatus(actor, store, workOrderId, status)));
+  }
+
+  async closeWorkOrder(actor: Actor, workOrderId: string, close: WorkOrderClose): Promise<WorkOrder> {
+    return withFileLock(this.filePath, () => this.mutate((store) => closeOrder(actor, store, workOrderId, close)));
+  }
+
+  async listContracts(actor: Actor, companyId: string): Promise<ContractRecord[]> {
+    return withFileLock(this.filePath, async () => readContracts(actor, await this.read(), companyId));
+  }
+
+  async listOperarios(actor: Actor, companyId: string): Promise<OperarioOption[]> {
+    return withFileLock(this.filePath, async () => readOperarios(actor, await this.read(), companyId));
   }
 
   private async read(): Promise<StoreFile> {
@@ -168,6 +209,11 @@ export class LocalMastersRepository implements MastersRepository {
       const parsed = JSON.parse(raw) as StoreFile;
       if (!parsed || !Array.isArray(parsed.companies) || !Array.isArray(parsed.clients)) {
         throw new ValidationError(`El almacén local ${this.filePath} no tiene el formato esperado.`);
+      }
+      if (parsed.version !== 2 || !Array.isArray(parsed.incidents) || !Array.isArray(parsed.workOrders)) {
+        const seeded = emptyStore();
+        await this.write(seeded);
+        return seeded;
       }
       return parsed;
     } catch (error) {
