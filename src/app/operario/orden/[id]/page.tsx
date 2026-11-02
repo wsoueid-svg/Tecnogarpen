@@ -79,7 +79,9 @@ export default async function OperarioOrdenPage({
             Firma
             <input name="signatureName" required maxLength={120} defaultValue={actor.displayName} />
           </label>
-          <button type="submit">Cerrar orden</button>
+          <button type="submit" className="primary-cta">
+            Cerrar orden
+          </button>
         </form>
       ) : null}
     </main>

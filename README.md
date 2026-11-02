@@ -13,10 +13,10 @@ rm -f .data/store.json
 npm run dev
 ```
 
-Open http://localhost:3000. There is no password. The first read writes `.data/store.json` from the fixtures. If that file already exists from an older run, delete it so the demo seed loads again.
+Open http://localhost:3000. There is no password. The first read writes `.data/store.json` from the fixtures. If that file already exists from an older run, use **Reset demo** (login, the office rail, and Mi día) or delete the file so the demo seed loads again. Reset demo only runs when `DATA_BACKEND` is the local file (`local`, `file`, or `json`). With `DATA_BACKEND=supabase` the control stays hidden.
 
 1. **Marta Puig** (jefe, TG and TGI) lands on **Panel**.
-   - Tecno Garpen: open incidents, orders by status, closed hours against **350 € / 8 h**.
+   - Tecno Garpen: open incidents, orders by status, closed hours against **objetivo ~350 € / 8 h**.
    - Switch the header to **TGI · Tecno Garpen Instalaciones** and the Gavà nave replaces the Garraf work. Switch back to TG.
    - **Incidencias**: six failures in the seed (F-3001 … F-3006). Open one, change the status, or use **Nueva incidencia**.
    - **Órdenes**: open **F-3001** (puerta del garaje, sin operario). **Asignar** Pol Riera and set the status to **En curso**.

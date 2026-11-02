@@ -58,9 +58,11 @@ button:hover, .button:hover { background: var(--steel-2); color: white; }
 button.quiet {
   border-color: transparent;
   background: transparent;
-  color: var(--steel-ink);
+  color: var(--steel);
   padding-inline: 8px;
 }
+
+button.quiet:hover { background: transparent; color: var(--steel-2); }
 
 .skip {
   position: absolute;
@@ -262,12 +264,26 @@ th {
 .roster form { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 14px 0; }
 .roster h3 { margin: 0; font-size: 18px; font-weight: 600; }
 .roster p { margin: 2px 0 0; color: var(--muted); }
+.roster li.persona-oficina,
+.roster li.persona-campo { border-left: 4px solid var(--steel); padding-left: 12px; }
+.roster li.persona-campo { border-left-color: var(--amber); }
+.persona-kicker {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--steel);
+}
+.persona-campo .persona-kicker { color: var(--amber); }
 
 .checks { list-style: none; padding: 0; margin: 16px 0; }
 .checks li { padding: 8px 0; border-top: 1px solid var(--line); }
 
 .field-desk { padding: 20px 16px 32px; max-width: 720px; margin: 0 auto; }
 .field-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.field-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; }
+.field-tools .reset-demo { margin: 0; }
 .field-top p { margin: 0; color: var(--muted); font-size: 13px; }
 .field-desk h1 { margin: 4px 0 0; font-size: 32px; letter-spacing: -0.03em; }
 .meters { display: grid; grid-template-columns: repeat(3, 1fr); margin: 22px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -278,11 +294,43 @@ th {
 .field-note { font-size: 16px; max-width: 42ch; }
 .field-nav { display: flex; gap: 18px; margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--line); }
 .field-nav a { font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; }
+.field-help { margin: 22px 0 0; color: var(--muted); font-size: 14px; max-width: 42ch; }
 
 .office-meters { margin-top: 0; }
 .section-title { margin: 22px 0 8px; font-size: 16px; }
 .bar { height: 8px; background: var(--line); margin: 8px 0 18px; max-width: 28rem; }
 .bar span { display: block; height: 100%; background: var(--steel); }
+.target {
+  max-width: 36rem;
+  margin: 4px 0 22px;
+  padding: 14px 16px 12px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+}
+.target-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.target-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.target-head p { margin: 0; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar.bar-target {
+  height: 20px;
+  max-width: none;
+  margin: 12px 0 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e4e0d6;
+}
+.bar.bar-target span { border-radius: 999px; }
+.target-scale { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 13px; }
+button.primary-cta { min-height: 56px; width: 100%; font-size: 18px; padding: 14px 18px; }
+.reset-demo { margin: 18px 0 0; }
+.reset-demo:not(:has(button)):not(:has(p)) { display: none; margin: 0; }
+.reset-demo p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.reset-demo button { background: transparent; color: var(--steel); border-color: var(--line); }
+.reset-demo button:hover { background: white; color: var(--steel-2); }
+.reset-demo-rail { margin-top: 12px; }
+.reset-demo-rail p { color: #b7c9d4; }
+.reset-demo-rail button { width: 100%; color: white; border-color: rgba(255, 255, 255, 0.55); }
+.reset-demo-rail button:hover { background: rgba(255, 255, 255, 0.12); color: white; }
+.reset-note { margin: 12px 0 0; }
 .status-line { list-style: none; display: flex; flex-wrap: wrap; gap: 16px; padding: 0; margin: 0 0 16px; }
 .status-line li { display: flex; align-items: center; gap: 8px; }
 .status-line strong { font-size: 22px; }
@@ -299,6 +347,7 @@ th {
 .day-row { display: grid; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); min-height: 48px; }
 .day-row span { color: var(--muted); }
 .check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.sheet label.check { display: flex; align-items: center; font-weight: 500; font-size: 15px; }
 
 @media (max-width: 800px) {
   .desk { grid-template-columns: 1fr; }
