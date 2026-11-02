@@ -1,0 +1,2 @@
+# Demo fixtures (Infraspeak-shaped)
+These NDJSON files are hand-written, **fictional** sample records shaped like Infraspeak public-API JSON:API resources (attributes from research/openapi.json / fields.txt), created offline with no API calls or credentials, for the Tecno Garpen Adri demo seed only — **not a live dump and not real TG data**; see SEED-MAP.md for the table mapping and fields marked GUESS, and replace everything with the real export once Wael provides the PAT.
