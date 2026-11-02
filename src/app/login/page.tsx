@@ -3,10 +3,20 @@ import { loginAs } from "../../auth/actions";
 import { getActor } from "../../auth/current";
 import { entraStatus } from "../../auth/entra";
 import { landingPath } from "../../domain/access";
-import { DIRECTORY_USERS, companyName } from "../../domain/directory";
-import { roleLabel } from "../../domain/labels";
+import { ResetDemo } from "../../components/reset-demo";
+import { DIRECTORY_USERS, companyName, type DirectoryUser } from "../../domain/directory";
 
 export const dynamic = "force-dynamic";
+
+function persona(user: DirectoryUser): { kicker: string; lands: string; kind: "oficina" | "campo" } {
+  if (user.role === "operario") {
+    return { kicker: "Operario", lands: "Entra a Mi día", kind: "campo" };
+  }
+  if (user.role === "jefe") {
+    return { kicker: "Jefe · oficina", lands: "Entra al panel", kind: "oficina" };
+  }
+  return { kicker: "Oficina", lands: "Entrar", kind: "oficina" };
+}
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const actor = await getActor();
@@ -25,7 +35,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <section className="gate-brand">
         <p className="mark">TG</p>
         <h1>Tecno Garpen</h1>
-        <p>Centro de control · Incremento A</p>
+        <p>Demo Adri · sin contraseña</p>
       </section>
       <section className="gate-roster">
         <h2>Entrar</h2>
@@ -48,25 +58,28 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </>
         ) : (
           <>
-            <p>Directorio de demostración. Elige una persona; no hay contraseña en este incremento.</p>
+            <p>No hay contraseña. Elige quién entra: Marta abre la oficina, Pol abre el día de campo.</p>
             <ul className="roster">
-              {DIRECTORY_USERS.map((user) => (
-                <li key={user.id}>
-                  <form action={loginAs}>
-                    <div>
-                      <h3>{user.displayName}</h3>
-                      <p>
-                        {roleLabel(user.role)} · {user.companyIds.map((id) => companyName(id)).join(", ")}
-                      </p>
-                    </div>
-                    <input type="hidden" name="userId" value={user.id} />
-                    <button type="submit">Entrar</button>
-                  </form>
-                </li>
-              ))}
+              {DIRECTORY_USERS.map((user) => {
+                const card = persona(user);
+                return (
+                  <li key={user.id} className={`persona-${card.kind}`}>
+                    <form action={loginAs}>
+                      <div>
+                        <p className="persona-kicker">{card.kicker}</p>
+                        <h3>{user.displayName}</h3>
+                        <p>{user.companyIds.map((id) => companyName(id)).join(" · ")}</p>
+                      </div>
+                      <input type="hidden" name="userId" value={user.id} />
+                      <button type="submit">{card.lands}</button>
+                    </form>
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}
+        <ResetDemo next="/login" />
       </section>
     </main>
   );

@@ -5,6 +5,7 @@ import { getRepository } from "../../data/get-repository";
 import { formatHours, formatWhen } from "../../domain/format";
 import { orderStatusLabel } from "../../domain/labels";
 import { myOpenOrders } from "../../domain/operations";
+import { ResetDemo } from "../../components/reset-demo";
 import { StatusPill } from "../../components/status-pill";
 
 export default async function OperarioPage() {
@@ -23,9 +24,12 @@ export default async function OperarioPage() {
           </p>
           <h1>Mi día</h1>
         </div>
-        <form action={logout}>
-          <button type="submit">Salir</button>
-        </form>
+        <div className="field-tools">
+          <ResetDemo next="/operario" compact />
+          <form action={logout}>
+            <button type="submit">Salir</button>
+          </form>
+        </div>
       </header>
       <p className="field-note">Órdenes asignadas a ti, también las del miércoles y el jueves. Abre una para empezarla o cerrarla.</p>
       <h2 className="section-title">Por hacer</h2>
@@ -53,12 +57,9 @@ export default async function OperarioPage() {
           </li>
         ))}
       </ul>
-      <nav className="field-nav" aria-label="Operario">
-        <Link href="/operario" aria-current="page">
-          Mi día
-        </Link>
-        <Link href="/clientes">Consultar oficina</Link>
-      </nav>
+      <p className="field-help">
+        ¿Te falta un dato de cliente o finca? Puedes <Link href="/clientes">consultar la oficina</Link> en solo lectura.
+      </p>
     </main>
   );
 }

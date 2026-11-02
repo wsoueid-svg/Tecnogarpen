@@ -6,7 +6,7 @@ import { getRepository } from "../../../data/get-repository";
 import { buildDashboard } from "../../../domain/dashboard";
 import { formatEuros, formatHours } from "../../../domain/format";
 import { orderStatusLabel } from "../../../domain/labels";
-import { WORK_ORDER_STATUSES } from "../../../domain/types";
+import { HOURS_PER_DAY, WORK_ORDER_STATUSES } from "../../../domain/types";
 
 export const metadata = { title: "Panel" };
 
@@ -25,7 +25,7 @@ export default async function PanelPage() {
     <>
       <PageHeader
         title="Panel"
-        lede="Incidencias abiertas, órdenes por estado y horas cerradas a 350 € la jornada de 8 h."
+        lede="Incidencias abiertas, órdenes por estado y horas cerradas frente al objetivo de la jornada."
       />
       <dl className="meters office-meters">
         <div>
@@ -41,10 +41,31 @@ export default async function PanelPage() {
           <dd>{formatEuros(board.euros)}</dd>
         </div>
       </dl>
-      <p className="hint">Referencia: {formatEuros(board.dayRate)} por día. La barra es la parte de una jornada que cubren las horas ya cerradas.</p>
-      <div className="bar" aria-hidden="true">
-        <span style={{ width: `${Math.round(board.dayFraction * 100)}%` }} />
-      </div>
+      <section className="target" aria-labelledby="objetivo-jornada">
+        <div className="target-head">
+          <h2 id="objetivo-jornada">
+            Objetivo ~{board.dayRate} € / {HOURS_PER_DAY} h
+          </h2>
+          <p>{Math.round(board.dayFraction * 100)}%</p>
+        </div>
+        <div
+          className="bar bar-target"
+          role="meter"
+          aria-valuemin={0}
+          aria-valuemax={HOURS_PER_DAY}
+          aria-valuenow={Math.min(board.hours, HOURS_PER_DAY)}
+          aria-valuetext={`${formatHours(board.hours)} cerradas de ${HOURS_PER_DAY} h. Objetivo ~${board.dayRate} €.`}
+        >
+          <span style={{ width: `${Math.round(board.dayFraction * 100)}%` }} />
+        </div>
+        <div className="target-scale">
+          <span>0 h</span>
+          <span>
+            {formatHours(board.hours)} cerradas · {formatEuros(board.euros)}
+          </span>
+          <span>{HOURS_PER_DAY} h</span>
+        </div>
+      </section>
       <h2 className="section-title">Órdenes por estado</h2>
       <ul className="status-line">
         {WORK_ORDER_STATUSES.map((status) => (

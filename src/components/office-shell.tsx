@@ -5,6 +5,7 @@ import { roleLabel } from "../domain/labels";
 import type { Actor, Company } from "../domain/types";
 import { CompanySwitch } from "./company-switch";
 import { OfficeNav } from "./office-nav";
+import { ResetDemo } from "./reset-demo";
 
 export function OfficeShell({
   actor,
@@ -33,6 +34,7 @@ export function OfficeShell({
         </Link>
         <OfficeNav />
         <p className="rail-note">Demo Adri · incidencias y órdenes</p>
+        <ResetDemo next="/panel" tone="rail" />
       </aside>
       <div className="workspace">
         <header className="topbar">
